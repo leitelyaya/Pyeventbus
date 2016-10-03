@@ -5,7 +5,9 @@ from collections import defaultdict
 
 def add_event(valid_type):
     def decorate(func):
-        setattr(func,'event',valid_type.id())
+        events = getattr(func, 'events',[])
+        events.append(valid_type.id())
+        setattr(func,'events',events)
         return func
     return decorate
 
@@ -22,8 +24,9 @@ class Listener(object):
 
     def init_event_handlers(self):
         for name,func in self.get_handlers():
-            self.event_handlers[func.event].append(func)
+            for event in func.events:
+                self.event_handlers[event].append(func)
 
     def get_handlers(self):
         funcs=inspect.getmembers(self,predicate=inspect.ismethod)
-        return [(name,func) for name,func in funcs if hasattr(func,'event')]
+        return [(name,func) for name,func in funcs if hasattr(func,'events')]
